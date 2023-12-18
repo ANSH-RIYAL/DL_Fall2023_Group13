@@ -12,9 +12,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import GaussianBlur
-from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 
 base_dir = './Dataset_Student/'
+
 
 class Segmentation_Mask_Dataset(Dataset):
     def __init__(self, all_frames):
@@ -24,7 +24,7 @@ class Segmentation_Mask_Dataset(Dataset):
         return len(self.frames)
 
     def __getitem__(self, idx):
-        global base_dir        
+        global base_dir
         i, j = self.frames[idx]
         file_path = f"{base_dir}train/video_{i}/image_{j}.png"
         frame = torch.tensor(plt.imread(file_path)).permute(2, 0, 1)
@@ -33,7 +33,7 @@ class Segmentation_Mask_Dataset(Dataset):
         mask = np.load(file_path)[j]
         return frame, mask
 
-    
+
 class Frame_Prediction_Dataset(Dataset):
     def __init__(self, num_of_vids, evaluation_mode=False):
         if evaluation_mode:
@@ -45,7 +45,7 @@ class Frame_Prediction_Dataset(Dataset):
 
     def __getitem__(self, idx):
         global base_dir
-        
+
         num_hidden_frames = 11
         num_total_frames = 22
         x = []
@@ -68,9 +68,8 @@ class Frame_Prediction_Dataset(Dataset):
     def __len__(self):
         vid_len = len(self.vid_indexes)
         return vid_len
-    
-    
-    
+
+
 class Combined_Pipeline_Dataset(Dataset):
     def __init__(self, num_of_vids=1000, evaluation_mode=False):
         self.evaluation_mode = evaluation_mode
@@ -91,7 +90,7 @@ class Combined_Pipeline_Dataset(Dataset):
 
     def __getitem__(self, idx):
         global base_dir
-        
+
         num_hidden_frames = 11
         num_total_frames = 22
         x = []
@@ -109,4 +108,3 @@ class Combined_Pipeline_Dataset(Dataset):
         file_path = f"{base_dir}{self.mode}/video_{i}/mask.npy"
         y = np.load(file_path)[21]  # last frame.
         return x, y
-
