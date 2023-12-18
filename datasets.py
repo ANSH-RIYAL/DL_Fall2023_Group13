@@ -14,15 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import GaussianBlur
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 
-# Ansh
-# base_dir = './../../../scratch/ar7964/dataset_videos/dataset/'
-base_dir = './../Dataset_Student/'
-
-# # Shreemayi
-# base_dir = './../../dataset/'
-
-# # Isha
-# base_dir = ''
+base_dir = './Dataset_Student/'
 
 class Segmentation_Mask_Dataset(Dataset):
     def __init__(self, all_frames):
