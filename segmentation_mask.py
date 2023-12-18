@@ -66,7 +66,7 @@ model = nn.DataParallel(model)
 load_weights(model)
 
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=momentum)#, foreach=True)
+optimizer = optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay, momentum=momentum)
 grad_scaler = torch.cuda.amp.GradScaler(enabled=True)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 

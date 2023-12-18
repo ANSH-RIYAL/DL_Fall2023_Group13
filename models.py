@@ -17,11 +17,7 @@ import sys
 
 # Segmentation Mask - Unet model:
 
-# Unet definition 2
-
 class DoubleConv(nn.Module):
-    """(convolution => [BN] => ReLU) * 2"""
-
     def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
         if not mid_channels:
@@ -32,34 +28,26 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
+            nn.ReLU(inplace=True))
 
     def forward(self, x):
         return self.double_conv(x)
 
 
 class Down(nn.Module):
-    """Downscaling with maxpool then double conv"""
-
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.maxpool_conv = nn.Sequential(
             nn.MaxPool2d(2),
-            DoubleConv(in_channels, out_channels)
-        )
+            DoubleConv(in_channels, out_channels))
 
     def forward(self, x):
         return self.maxpool_conv(x)
 
 
 class Up(nn.Module):
-    """Upscaling then double conv"""
-
     def __init__(self, in_channels, out_channels, bilinear=True):
         super().__init__()
-
-        # if bilinear, use the normal convolutions to reduce the number of channels
         if bilinear:
             self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
             self.conv = DoubleConv(in_channels, out_channels, in_channels // 2)
@@ -69,15 +57,9 @@ class Up(nn.Module):
 
     def forward(self, x1, x2):
         x1 = self.up(x1)
-        # input is CHW
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
-
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                        diffY // 2, diffY - diffY // 2])
-        # if you have padding issues, see
-        # https://github.com/HaiyongJiang/U-Net-Pytorch-Unstructured-Buggy/commit/0e854509c2cea854e247a9c615f175f76fbb2e3a
-        # https://github.com/xiaopeng-liao/Pytorch-UNet/commit/8ebac70e633bac59fc22bb5195e513d5832fb3bd
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,diffY // 2, diffY - diffY // 2])
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 
@@ -123,91 +105,6 @@ class UNet(nn.Module):
         logits = self.outc(x)
         return logits
 
-    def use_checkpointing(self):
-        self.inc = torch.utils.checkpoint(self.inc)
-        self.down1 = torch.utils.checkpoint(self.down1)
-        self.down2 = torch.utils.checkpoint(self.down2)
-        self.down3 = torch.utils.checkpoint(self.down3)
-        self.down4 = torch.utils.checkpoint(self.down4)
-        self.up1 = torch.utils.checkpoint(self.up1)
-        self.up2 = torch.utils.checkpoint(self.up2)
-        self.up3 = torch.utils.checkpoint(self.up3)
-        self.up4 = torch.utils.checkpoint(self.up4)
-        self.outc = torch.utils.checkpoint(self.outc)
-
-
-# class encoding_block(nn.Module):
-    
-#     def __init__(self, in_channels, out_channels):
-#         super(encoding_block, self).__init__()
-#         model = []
-#         model.append(nn.Conv2d(in_channels, out_channels, 3, 1, 1, bias=False))
-#         model.append(nn.BatchNorm2d(out_channels))
-#         model.append(nn.ReLU(inplace=True))
-#         model.append(nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False))
-#         model.append(nn.BatchNorm2d(out_channels))
-#         model.append(nn.ReLU(inplace=True))
-#         self.conv = nn.Sequential(*model)
-
-#     def forward(self, x):
-#         return self.conv(x)
-
-
-# class unet_model(nn.Module):
-#     '''
-#     example usage:
-#     model = unet_model()
-#     model = nn.DataParallel(model)
-#     model = model.to(device)
-#     '''
-#     def __init__(self, out_channels=49, features=[64, 128, 256, 512]):
-#         super(unet_model, self).__init__()
-#         self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
-#         self.conv1 = encoding_block(3, features[0])
-#         self.conv2 = encoding_block(features[0], features[1])
-#         self.conv3 = encoding_block(features[1], features[2])
-#         self.conv4 = encoding_block(features[2], features[3])
-#         self.conv5 = encoding_block(features[3] * 2, features[3])
-#         self.conv6 = encoding_block(features[3], features[2])
-#         self.conv7 = encoding_block(features[2], features[1])
-#         self.conv8 = encoding_block(features[1], features[0])
-#         self.tconv1 = nn.ConvTranspose2d(features[-1] * 2, features[-1], kernel_size=2, stride=2)
-#         self.tconv2 = nn.ConvTranspose2d(features[-1], features[-2], kernel_size=2, stride=2)
-#         self.tconv3 = nn.ConvTranspose2d(features[-2], features[-3], kernel_size=2, stride=2)
-#         self.tconv4 = nn.ConvTranspose2d(features[-3], features[-4], kernel_size=2, stride=2)
-#         self.bottleneck = encoding_block(features[3], features[3] * 2)
-#         self.final_layer = nn.Conv2d(features[0], out_channels, kernel_size=1)
-
-#     def forward(self, x):
-#         skip_connections = []
-#         x = self.conv1(x)
-#         skip_connections.append(x)
-#         x = self.pool(x)
-#         x = self.conv2(x)
-#         skip_connections.append(x)
-#         x = self.pool(x)
-#         x = self.conv3(x)
-#         skip_connections.append(x)
-#         x = self.pool(x)
-#         x = self.conv4(x)
-#         skip_connections.append(x)
-#         x = self.pool(x)
-#         x = self.bottleneck(x)
-#         skip_connections = skip_connections[::-1]
-#         x = self.tconv1(x)
-#         x = torch.cat((skip_connections[0], x), dim=1)
-#         x = self.conv5(x)
-#         x = self.tconv2(x)
-#         x = torch.cat((skip_connections[1], x), dim=1)
-#         x = self.conv6(x)
-#         x = self.tconv3(x)
-#         x = torch.cat((skip_connections[2], x), dim=1)
-#         x = self.conv7(x)
-#         x = self.tconv4(x)
-#         x = torch.cat((skip_connections[3], x), dim=1)
-#         x = self.conv8(x)
-#         x = self.final_layer(x)
-#         return x
 
 # Frame Prediction model:
 
@@ -286,7 +183,6 @@ class InceptionBridge(nn.Module):
     def __init__(self, input_channels, hidden_channels, N_T, inception_kernel=[3, 5, 7, 11], groups=8):
         super().__init__()
         self.N_T = N_T
-        # encoder.
         encoder_layers = [
             InceptionModule(input_channels, hidden_channels // 2, hidden_channels, inception_kernel=inception_kernel,
                             groups=groups)]
@@ -296,7 +192,6 @@ class InceptionBridge(nn.Module):
         encoder_layers.append(
             InceptionModule(hidden_channels, hidden_channels // 2, hidden_channels, inception_kernel=inception_kernel,
                             groups=groups))
-        # decoder.
         decoder_layers = [
             InceptionModule(hidden_channels, hidden_channels // 2, hidden_channels, inception_kernel=inception_kernel,
                             groups=groups)]
@@ -305,27 +200,21 @@ class InceptionBridge(nn.Module):
                                                   inception_kernel=inception_kernel, groups=groups))
         decoder_layers.append(InceptionModule(2 * hidden_channels, hidden_channels // 2, input_channels,
                                               inception_kernel=inception_kernel, groups=groups))
-        # self vars.
         self.encoder = nn.Sequential(*encoder_layers)
         self.decoder = nn.Sequential(*decoder_layers)
 
     def forward(self, x):
         B, T, C, H, W = x.shape
         x = x.reshape(B, T * C, H, W)
-
-        # Encoder.
         list_pass = []
         z_hid = x
         for i in range(self.N_T):
             z_hid = self.encoder[i](z_hid)
             if (i < self.N_T - 1):
                 list_pass.append(z_hid)
-
-        # Decoder.
         z_hid = self.decoder[0](z_hid)
         for i in range(1, self.N_T):
             z_hid = self.decoder[i](torch.cat([z_hid, list_pass[-i]], dim=1))
-
         y_label = z_hid.reshape(B, T, C, H, W)
         return y_label
 
@@ -400,16 +289,12 @@ class combined_model(nn.Module):
         self.frame_prediction_model = DLModelVideoPrediction((11, 3, 160, 240), 64, 512, groups=4)
         self.frame_prediction_model = self.frame_prediction_model.to(device)
         self.frame_prediction_model = nn.DataParallel(self.frame_prediction_model)
-#         self.image_segmentation_model = unet_model()
         self.image_segmentation_model = UNet(bilinear=True)
         self.image_segmentation_model = self.image_segmentation_model.to(device)
         self.image_segmentation_model = nn.DataParallel(self.image_segmentation_model)
 
     def forward(self, x):
         x = self.frame_prediction_model(x)
-        #         print(x.shape)
         x = x[:, -1]
-        #         print(x.shape)
         x = self.image_segmentation_model(x)
-        #         print(x.shape)
         return x

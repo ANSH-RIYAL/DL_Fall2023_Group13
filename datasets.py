@@ -13,7 +13,11 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import GaussianBlur
 
-base_dir = './Dataset_Student/'
+
+#######################################
+#######################################
+# MAKE CHANGES TO BASE DIRECTORY HERE:
+base_dir = './../Dataset_Student/'
 
 
 class Segmentation_Mask_Dataset(Dataset):
