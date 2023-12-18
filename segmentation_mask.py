@@ -39,7 +39,7 @@ def save_weights(model):
 
 
 # Create Train DataLoader
-batch_size = 64
+batch_size = 32
 num_videos = 1000
 
 num_frames_per_video = 22
@@ -81,7 +81,7 @@ for epoch in range(num_epochs):
     for batch_x, batch_y in train_pbar:
         batch_x, batch_y = get_blurry_images(batch_x,batch_y)
         batch_x, batch_y = batch_x.to(device), batch_y.to(device).long()
-        pred_y = model(batch_x)  # .long()
+        pred_y = model(batch_x)
         loss = criterion(pred_y, batch_y)
         loss += dice_loss(
             F.softmax(pred_y, dim=1).float(),
