@@ -45,6 +45,7 @@ scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001, steps_p
                                                 epochs=num_epochs)
 
 train_losses = []
+val_losses = []
 
 # Training Loop:
 for epoch in range(num_epochs):
@@ -69,7 +70,6 @@ for epoch in range(num_epochs):
     train_losses.append(train_loss)
     torch.save(model.state_dict(), './checkpoints/frame_prediction.pth')
 
-    val_loss = []
     model.eval()
     val_pbar = tqdm(val_loader)
 
