@@ -6,7 +6,7 @@ Final IOU on Validation Dataset: 0.2166<br>
 Final IOU on Hidden Dataset: 0.2209
 <br><br>
 Steps for replication:<br>
-Clone repo, download all datasets into the repository.<br>
+Clone repo, download the 'Dataset_Student' folder into the repository (it should have the 'hidden' folder).<br>
 Open Terminal and navigate to repo, then:<br>
 1. mkdir checkpoints<br>
 <br>
