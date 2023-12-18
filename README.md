@@ -13,13 +13,13 @@ Open Terminal and navigate to repo, then:<br>
 Ensure to set base_dir variable in datasets.py to the dataset directory.
 
 To train frame prediction model:
-3. python3 frame_prediction.py 
+2. python3 frame_prediction.py 
 This will save weights to the checkpoints folder frame_prediction.pth
 
 To train segmentation model:
-4. python3 segmentation_mask.py
+3. python3 segmentation_mask.py
 This will save weights to the checkpoints folder as 
-5. python3 hidden_eval.py
+4. python3 hidden_eval.py
 This will load weights from checkpoints folder and run inference on the hidden/test set.
 
 This will create a file 'leaderboard_2_team_13.pt'<br>
