@@ -24,3 +24,8 @@ This will load weights from checkpoints folder and run inference on the hidden/t
 
 This will create a file 'leaderboard_2_team_13.pt'<br>
 This file contains a tensor of shape (2000,160,240) representing the mask for each of the 2000 videos in the hidden dataset.
+
+Note: We referred to the following github repositories while working on this project
+https://github.com/milesial/Pytorch-UNet
+https://github.com/simmimak/Video-Frame-Prediction-and-Semantic-Segmentation-with-SSL/tree/main
+
